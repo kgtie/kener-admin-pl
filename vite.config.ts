@@ -30,18 +30,10 @@ export default defineConfig(({ mode }) => {
   const allowedHost = getAllowedHost(origin);
 
   return {
+    // Keep the editor and its extensions in one optimized module graph. Mixing
+    // bundled and excluded CodeMirror modules creates duplicate state instances.
     optimizeDeps: {
-      include: ["rrule"],
-      exclude: [
-        "svelte-codemirror-editor",
-        "codemirror",
-        "@codemirror/lang-javascript",
-        "@codemirror/lang-json",
-        "@codemirror/lang-markdown",
-        "@codemirror/lang-css",
-        "@codemirror/lang-html",
-        "@uiw/codemirror-theme-github",
-      ],
+      include: ["rrule", "svelte-codemirror-editor", "@codemirror/state", "@codemirror/view"],
     },
     plugins: [tailwindcss(), sveltekit(), version(), devtoolsJson()],
     server: {
