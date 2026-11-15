@@ -4,8 +4,8 @@
   "type": "module",
   "private": false,
   "license": "MIT",
-  "description": "Kener is a modern, open-source status page application built with Node.js. It provides real-time monitoring, uptime tracking, incident management, and beautiful dashboards. Perfect for DevOps teams, SaaS providers, and businesses needing reliable service status communication with minimal setup.",
-  "author": "Raj Nandan Sharma <rajnandan1@gmail.com>",
+  "description": "Kener Admin PL — Polish and English management panel, maintained by kgtie; based on Kener 4.2.1.",
+  "author": "kgtie",
   "keywords": [
     "status page",
     "uptime monitoring",
@@ -25,7 +25,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/rajnandan1/kener.git"
+    "url": "https://github.com/kgtie/kener-admin-pl.git"
   },
   "scripts": {
     "build": "node scripts/build-sveltekit.js && node scripts/build-server.js",

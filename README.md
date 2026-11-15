@@ -1,3 +1,13 @@
+# Kener Admin PL
+
+Polski i angielski panel zarządzania Kenerem. Autor i opiekun forka: **[kgtie](https://github.com/kgtie)**.
+
+Baza: Kener **4.2.1**. Opis lokalizacji, zakres, sprawdzanie kompletności i zasady aktualizacji: **[README-PL.md](README-PL.md)**. Pochodzenie kodu i licencje: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
+Poniżej zachowano oryginalny opis Kenera. Obrazy Docker i odnośniki upstreamu opisują oryginalny projekt; nie zawierają tej lokalnej, jeszcze nieopublikowanej wersji tłumaczenia.
+
+---
+
 # Kener - Stunning Status Pages
 
 <p align="center">
