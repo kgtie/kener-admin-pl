@@ -4,11 +4,7 @@
 
 [Polski](#polski) · [English](#english) · [Instalacja](#instalacja) · [Installation](#installation)
 
-Fork i lokalizacja: **[kgtie](https://github.com/kgtie)** · Baza / Based on: **Kener 4.2.1** · [MIT](LICENSE)
-
-> **Lokalny podgląd / Local preview.** Lokalizacja nie została jeszcze opublikowana. Publiczny fork zawiera obecnie oryginalny kod Kenera. Instrukcje poniżej dotyczą pełnej kopii źródeł z naszymi zmianami.
->
-> The localization has not been published yet. The public fork currently contains the original Kener code. The instructions below require a full source copy containing our changes.
+Fork i lokalizacja: **[kgtie](https://github.com/kgtie)** · [MIT](LICENSE)
 
 <a id="polski"></a>
 
@@ -38,8 +34,6 @@ Język wybierasz w nagłówku panelu lub na ekranie konta. Preferencja zapisuje 
 <summary>Polski edytor i wyszukiwanie</summary>
 
 ![Polskie wyszukiwanie i polecenia edytora — przykładowy kod pozostaje niezmieniony](docs/admin-pl/screenshots/editor-pl.jpg)
-
-Zrzuty pochodzą z lokalnego panelu z fikcyjnym kontem i przykładowymi danymi. Angielska treść HTML w edytorze jest edytowalną zawartością, a nie etykietą interfejsu.
 
 </details>
 
@@ -175,10 +169,6 @@ npm run build
 PL: audyt sprawdza źródła tekstów, zgodność kluczy i placeholderów oraz przejrzane wyjątki techniczne. Po zmianie wersji Kenera przejrzyj różnice w panelu, ekranach konta i znanych błędach, uzupełnij oba słowniki i spis `scripts/admin-i18n/source-inventory.json`, a następnie sprawdź PL/EN oraz zachowanie treści użytkownika. Nie uruchamiaj builda równolegle z lokalnym Vite w tym samym katalogu — współdzielą `.svelte-kit`.
 
 EN: the audit checks source messages, matching keys and placeholders, and reviewed technical exceptions. When updating Kener, review changes to the panel, account screens and known errors; update both catalogues and `scripts/admin-i18n/source-inventory.json`, then verify PL/EN and preservation of user content. Do not run a production build alongside local Vite in the same checkout: both use `.svelte-kit`.
-
-PL: dowolne komunikaty zewnętrznych dostawców i systemowe kontrolki przeglądarki mogą zachować swój język. Audyt nie zastępuje przeglądu dynamicznych ekranów. Ostatnia zapisana weryfikacja: **891 testów PASS**, czysta kontrola typów, udana kompilacja i brak zgłoszonych braków w audycie **1932 tekstów**. Szczegóły i ograniczenia: [raport odbioru](docs/admin-pl/ODBIOR.md).
-
-EN: arbitrary third-party diagnostics and browser-native controls may retain their own language. The audit does not replace a review of dynamic screens. Latest recorded validation: **891 passing tests**, clean type checking, a successful build and no reported gaps across **1932 catalogue messages**. See the [acceptance report](docs/admin-pl/ODBIOR.md) for evidence and limitations.
 
 ## Projekt i licencja / Project and license
 

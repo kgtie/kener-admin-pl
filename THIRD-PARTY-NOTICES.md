@@ -1,6 +1,6 @@
 # Pochodzenie kodu i licencje
 
-Autorem i opiekunem **forka Kener Admin PL** oraz nowego opracowania lokalizacji jest **kgtie**. Oznaczenie autorstwa forka nie zmienia praw do wcześniejszych utworów.
+Autorem i opiekunem **forka Kener Admin PL** oraz nowego opracowania lokalizacji jest **kgtie**.
 
 ## Kener
 

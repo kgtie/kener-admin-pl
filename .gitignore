@@ -46,6 +46,10 @@ docs/superpowers/
 # Wayfinder scratch (local only)
 scratch/
 
+docs/admin-pl/evidence/*
+docs/admin-pl/ODBIOR.md
+docs/admin-pl/PRZYGOTOWANIE-PR.md
+
 # Claude session-local state (ralph-loop etc.)
 .claude/*.local.md
 .vitest-attachments/
