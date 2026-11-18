@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { readdirSync } from "node:fs";
 import english from "./en.json";
 import polish from "./pl.json";
 import { adminLocaleTag, resolveAdminLocale, translateAdmin } from "./messages";
 import { formatAdminDate, formatAdminDuration, formatAdminRelative } from "./formatters";
 import { getAlertText } from "$lib/alerts/alert-text";
+import { adminLanguages, getAdminLanguage, isAdminLocale } from "./languages";
 
 const tokens = (value: string) => [...value.matchAll(/\{([a-zA-Z][a-zA-Z0-9_]*)\}/g)].map((match) => match[1]).sort();
 
@@ -21,6 +23,16 @@ describe("administrative language catalogues", () => {
     expect(translateAdmin("pl", "Latency")).toBe("Opóźnienie");
     expect(translateAdmin("pl", "Uptime")).toBe("Dostępność");
     expect(translateAdmin("pl", "Triggers")).toBe("Kanały powiadomień");
+  });
+  it("provides Czech interface terminology while preserving values and diagnostics", () => {
+    expect(translateAdmin("cs", "Save")).toBe("Uložit");
+    expect(translateAdmin("cs", "Latency")).toBe("Odezva");
+    expect(translateAdmin("cs", "Uptime")).toBe("Dostupnost");
+    const name = "<script>$&</script>";
+    expect(translateAdmin("cs", "Welcome, {name}!", { name })).toContain(name);
+    const diagnostic = "bad  value\nat line 2";
+    expect(translateAdmin("cs", `Eval error: ${diagnostic}`)).toContain(diagnostic);
+    expect(translateAdmin("cs", "External diagnostic 721")).toBe("External diagnostic 721");
   });
   it("keeps fallback English and independent calls intact", () => {
     expect(translateAdmin("pl", "  Save \n")).toBe("Zapisz");
@@ -60,6 +72,14 @@ describe("administrative language catalogues", () => {
       "tcpEval nie zwrócił statusu lub opóźnienia.",
     );
   });
+  it("preserves spaces and line breaks in expanded and explicit diagnostics", () => {
+    const diagnostic = "bad  value\nat line 2\n  with indentation";
+    expect(translateAdmin("pl", `Eval error: ${diagnostic}`)).toBe(`Błąd skryptu oceny: ${diagnostic}`);
+    expect(translateAdmin("pl", "Eval error: {value0}", { value0: diagnostic })).toBe(
+      `Błąd skryptu oceny: ${diagnostic}`,
+    );
+    expect(translateAdmin("en", `Eval error: ${diagnostic}`)).toBe(`Eval error: ${diagnostic}`);
+  });
   it("preserves missing interpolation tokens for diagnosis instead of hiding data", () => {
     expect(translateAdmin("pl", "Welcome, {name}!")).toContain("{name}");
   });
@@ -93,10 +113,18 @@ describe("administrative locale resolution", () => {
     expect(resolveAdminLocale(undefined, "en;q=0,pl;q=0.1")).toBe("pl");
     expect(resolveAdminLocale(undefined, "en;q=invalid,pl;q=0.5")).toBe("pl");
   });
-  it("rejects unsupported cookie values and defaults to Polish", () => {
-    expect(resolveAdminLocale("../en", null)).toBe("pl");
-    expect(resolveAdminLocale(undefined, "de,fr")).toBe("pl");
-    expect(resolveAdminLocale(undefined, undefined)).toBe("pl");
+  it("resolves Czech cookies and weighted browser preferences independently", () => {
+    expect(resolveAdminLocale("cs", "pl-PL,en;q=0.9")).toBe("cs");
+    expect(resolveAdminLocale(undefined, "en-US;q=0.4,cs-CZ;q=0.9,pl;q=0.7")).toBe("cs");
+    expect(resolveAdminLocale("en", "cs-CZ")).toBe("en");
+    expect(resolveAdminLocale(undefined, "cs;q=0,en;q=0.9")).toBe("en");
+    expect(adminLocaleTag("cs")).toBe("cs-CZ");
+  });
+  it("rejects unsupported preferences and falls back to English", () => {
+    expect(resolveAdminLocale("../en", null)).toBe("en");
+    expect(resolveAdminLocale(undefined, "de,fr")).toBe("en");
+    expect(resolveAdminLocale(undefined, undefined)).toBe("en");
+    expect(resolveAdminLocale(undefined, "pl;q=0,fr;q=1")).toBe("en");
     expect(adminLocaleTag("en")).toBe("en-GB");
     expect(adminLocaleTag("pl")).toBe("pl-PL");
   });
@@ -124,5 +152,37 @@ describe("display-only dates and durations", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("registered panel languages", () => {
+  it("registers every catalogue with a native label and matching complete messages", () => {
+    const files = readdirSync(new URL(".", import.meta.url))
+      .filter((name) => name.endsWith(".json"))
+      .map((name) => name.slice(0, -5))
+      .sort();
+    expect(adminLanguages.map((language) => language.code).sort()).toEqual(files);
+    for (const language of adminLanguages) {
+      expect(language.label.trim()).not.toBe("");
+      expect(Intl.getCanonicalLocales(language.localeTag)).toHaveLength(1);
+      expect(Object.keys(language.messages).sort()).toEqual(Object.keys(english).sort());
+      for (const [key, value] of Object.entries(language.messages)) {
+        expect(value.trim(), `${language.code}: ${key}`).not.toBe("");
+        expect(tokens(value)).toEqual(tokens(key));
+      }
+    }
+  });
+  it("uses each registration for resolution, translations and formatting", () => {
+    for (const language of adminLanguages) {
+      expect(isAdminLocale(language.code)).toBe(true);
+      expect(resolveAdminLocale(language.code, null)).toBe(language.code);
+      expect(resolveAdminLocale(undefined, language.localeTag)).toBe(language.code);
+      expect(adminLocaleTag(language.code)).toBe(language.localeTag);
+      expect(getAdminLanguage(language.code).dateLocale).toBe(language.dateLocale);
+      expect(translateAdmin(language.code, "Save")).toBe(language.messages.Save);
+    }
+    expect(isAdminLocale("constructor")).toBe(false);
+    expect(isAdminLocale("__proto__")).toBe(false);
+    expect(isAdminLocale("../en")).toBe(false);
   });
 });

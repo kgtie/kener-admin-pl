@@ -1,6 +1,6 @@
 # Kener Admin PL
 
-**Polski panel zarządzania Kenerem. English included.**
+**Polski i czeski panel zarządzania Kenerem. English included.**
 
 [Polski](#polski) · [English](#english) · [Instalacja](#instalacja) · [Installation](#installation)
 
@@ -10,7 +10,7 @@ Fork i lokalizacja: **[kgtie](https://github.com/kgtie)** · [MIT](LICENSE)
 
 ## Polski
 
-Kener Admin PL dodaje polski język do panelu zarządzania i ekranów konta [Kenera](https://github.com/rajnandan1/kener). Przełączaj **Polski / English** bez przeładowania strony. Zarządzaj monitorami, incydentami, pracami serwisowymi i alertami w wybranym języku.
+Kener Admin PL dodaje polską i czeską wersję panelu zarządzania i ekranów konta [Kenera](https://github.com/rajnandan1/kener). Przełączaj **Polski / English / Čeština** bez przeładowania strony. Zarządzaj monitorami, incydentami, pracami serwisowymi i alertami w wybranym języku.
 
 Język panelu jest niezależny od języka publicznej strony statusowej. To pełna warstwa lokalizacji aplikacji — samo skopiowanie pliku `pl.json` do oryginalnego Kenera nie wystarczy.
 
@@ -20,7 +20,7 @@ Język panelu jest niezależny od języka publicznej strony statusowej. To pełn
 
 | Obszar             | Zakres                                                                                         |
 | ------------------ | ---------------------------------------------------------------------------------------------- |
-| Konto i nawigacja  | Logowanie, zaproszenia, resetowanie hasła, przełącznik PL/EN i etykiety dostępności            |
+| Konto i nawigacja  | Logowanie, zaproszenia, resetowanie hasła, przełącznik PL/EN/CS i etykiety dostępności         |
 | Monitoring         | Formularze 13 typów monitorów, pomiary, znane komunikaty diagnostyczne, daty i jednostki czasu |
 | Komunikacja        | Incydenty i aktualizacje, prace serwisowe, alerty, kanały powiadomień i subskrypcje            |
 | Administracja      | Użytkownicy, role i uprawnienia, OIDC, klucze API oraz dostawcy integracji                     |
@@ -28,7 +28,7 @@ Język panelu jest niezależny od języka publicznej strony statusowej. To pełn
 
 Znane teksty są tłumaczone przy wyświetlaniu. Nazwy monitorów, własne role, treści incydentów, edytowalne wiadomości e-mail i kod zachowują swoją treść. Adresy URL, wartości API i identyfikatory protokołów pozostają niezmienione. Dokładne frazy `delete <tag>` oraz `delete <tag> data` nadal obowiązują w potwierdzeniach usuwania; ich objaśnienia są po polsku.
 
-Język wybierasz w nagłówku panelu lub na ekranie konta. Preferencja zapisuje się na rok w cookie `kener_admin_locale`, osobno w każdej przeglądarce. Przy pierwszej wizycie panel rozpoznaje obsługiwany język przeglądarki, a w pozostałych przypadkach wybiera polski. Ustawienia **Języki i formaty → Języki** dotyczą strony publicznej.
+Język wybierasz w nagłówku panelu lub na ekranie konta. Preferencja zapisuje się na rok w cookie `kener_admin_locale`, osobno w każdej przeglądarce. Przy pierwszej wizycie panel rozpoznaje obsługiwany język przeglądarki, a w pozostałych przypadkach wybiera angielski. Ustawienia **Języki i formaty → Języki** dotyczą strony publicznej.
 
 <details>
 <summary>Polski edytor i wyszukiwanie</summary>
@@ -87,7 +87,7 @@ Wymagania: **Node.js 24.14 lub nowszy**, npm i działający **Redis**. Domyśln�
 
 ## English
 
-Kener Admin PL adds Polish localization to the management panel and account screens of [Kener](https://github.com/rajnandan1/kener). Switch between **Polski / English** instantly, without reloading the page. Manage monitors, incidents, maintenance and alerts in your preferred language.
+Kener Admin PL adds Polish and Czech localization to the management panel and account screens of [Kener](https://github.com/rajnandan1/kener). Switch between **Polski / English / Čeština** instantly, without reloading the page. Manage monitors, incidents, maintenance and alerts in your preferred language.
 
 The panel language is independent of the public status-page language. This is an application localization layer; copying `pl.json` into an unmodified Kener installation does not translate its management panel.
 
@@ -97,7 +97,7 @@ The panel language is independent of the public status-page language. This is an
 
 | Area                   | Included                                                                                  |
 | ---------------------- | ----------------------------------------------------------------------------------------- |
-| Account and navigation | Sign-in, invitations, password reset, PL/EN selector and accessibility labels             |
+| Account and navigation | Sign-in, invitations, password reset, PL/EN/CS selector and accessibility labels          |
 | Monitoring             | Forms for 13 monitor types, measurements, known diagnostic messages, dates and time units |
 | Communication          | Incidents and updates, maintenance, alerts, notification channels and subscriptions       |
 | Administration         | Users, roles and permissions, OIDC, API keys and integration providers                    |
@@ -105,7 +105,7 @@ The panel language is independent of the public status-page language. This is an
 
 Known messages are translated at their display boundary. Monitor names, custom roles, incident content, editable email bodies and code retain their original content. URLs, API values and protocol identifiers remain unchanged. The exact confirmation phrases `delete <tag>` and `delete <tag> data` are preserved, with localized instructions.
 
-Use the selector in the management header or on account screens. The `kener_admin_locale` cookie stores the preference for one year, separately in each browser. On a first visit, the panel follows a supported browser language and otherwise defaults to Polish. **Internationalization → Languages** continues to configure the public page independently.
+Use the selector in the management header or on account screens. The `kener_admin_locale` cookie stores the preference for one year, separately in each browser. On a first visit, the panel follows a supported browser language and otherwise defaults to English. **Internationalization → Languages** continues to configure the public page independently.
 
 The screenshots use a local installation with a fictional account and sample data. The English HTML in the editor screenshot is editable content, not untranslated interface text.
 
@@ -157,18 +157,23 @@ Requirements: **Node.js 24.14 or newer**, npm and a running **Redis** instance. 
 
 ## Utrzymanie / Maintenance
 
-Katalogi panelu / Panel catalogues: `src/lib/admin-i18n/en.json` and `pl.json`.
+Katalogi panelu / Panel catalogues: `src/lib/admin-i18n/en.json`, `pl.json` and `cs.json` — **1,932 messages per language**.
 
 ```bash
+node scripts/admin-i18n/check-upstream.mjs
 node scripts/admin-i18n/audit.mjs --report /tmp/kener-admin-pl-audit.json
 npm run check
 npm test
 npm run build
 ```
 
-PL: audyt sprawdza źródła tekstów, zgodność kluczy i placeholderów oraz przejrzane wyjątki techniczne. Po zmianie wersji Kenera przejrzyj różnice w panelu, ekranach konta i znanych błędach, uzupełnij oba słowniki i spis `scripts/admin-i18n/source-inventory.json`, a następnie sprawdź PL/EN oraz zachowanie treści użytkownika. Nie uruchamiaj builda równolegle z lokalnym Vite w tym samym katalogu — współdzielą `.svelte-kit`.
+PL: audyt sprawdza źródła tekstów, zgodność kluczy i placeholderów oraz przejrzane wyjątki techniczne. Po zmianie wersji Kenera przejrzyj różnice w panelu, ekranach konta i znanych błędach, uzupełnij wszystkie słowniki i spis `scripts/admin-i18n/source-inventory.json`, a następnie sprawdź PL/EN/CS oraz zachowanie treści użytkownika. Nie uruchamiaj builda równolegle z lokalnym Vite w tym samym katalogu — współdzielą `.svelte-kit`.
 
-EN: the audit checks source messages, matching keys and placeholders, and reviewed technical exceptions. When updating Kener, review changes to the panel, account screens and known errors; update both catalogues and `scripts/admin-i18n/source-inventory.json`, then verify PL/EN and preservation of user content. Do not run a production build alongside local Vite in the same checkout: both use `.svelte-kit`.
+EN: the audit checks source messages, matching keys and placeholders, and reviewed technical exceptions. When updating Kener, review changes to the panel, account screens and known errors; update every catalogue and `scripts/admin-i18n/source-inventory.json`, then verify PL/EN/CS and preservation of user content. Do not run a production build alongside local Vite in the same checkout: both use `.svelte-kit`.
+
+PL: kolejne języki są mile widziane. Dodaj katalog i jeden wpis w `src/lib/admin-i18n/languages.ts`; przełącznik, wybór języka i formatowanie dat korzystają ze wspólnego rejestru. [Instrukcja dodawania języka](<src/routes/(docs)/docs/content/v4/internationalization.md#admin-panel-contribute>). Kontrola wydania tylko odczytuje GitHub — nie aktualizuje ani nie scala kodu automatycznie.
+
+EN: contributions in additional languages are welcome. Add a catalogue and one entry to `src/lib/admin-i18n/languages.ts`; the selector, locale resolution and date formatting follow that shared registry. [Language contribution guide](<src/routes/(docs)/docs/content/v4/internationalization.md#admin-panel-contribute>). The upstream-release check is read-only and never updates or merges code automatically.
 
 ## Projekt i licencja / Project and license
 

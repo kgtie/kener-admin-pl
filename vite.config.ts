@@ -7,6 +7,7 @@ import devtoolsJson from "vite-plugin-devtools-json";
 import { playwright } from "@vitest/browser-playwright";
 import { configDefaults } from "vitest/config";
 import { buildCheerioGuest } from "./scripts/cheerio-guest.js";
+import { browserTestCommands } from "./scripts/browser-test-commands.ts";
 
 import * as dotenv from "dotenv";
 
@@ -76,6 +77,7 @@ export default defineConfig(({ mode }) => {
             name: "client",
             browser: {
               enabled: true,
+              commands: browserTestCommands,
               headless: true,
               provider: playwright({ contextOptions: { timezoneId: "UTC" } }),
               instances: [{ browser: "chromium" }],

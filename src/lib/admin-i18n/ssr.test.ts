@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { render } from "svelte/server";
+import { get } from "svelte/store";
+import type { AdminI18nContext } from "./context";
 import Harness from "./AdminI18n.harness.svelte";
 
 describe("administrative SSR context", () => {
@@ -21,5 +23,38 @@ describe("administrative SSR context", () => {
       expect(results[i]).toContain("&lt;script>");
       expect(results[i]).not.toContain("<script>test</script>");
     }
+  });
+  it("keeps retained context lifetimes isolated when either locale changes", () => {
+    const contexts: AdminI18nContext[] = [];
+    for (const initialLocale of ["pl", "en"] as const) {
+      const result = render(Harness, { props: { initialLocale, onContext: (context) => contexts.push(context) } });
+      expect(result.body).toContain('data-testid="translated"');
+    }
+    const [polish, english] = contexts;
+    expect(polish).not.toBe(english);
+    expect(get(polish.t)("Save")).toBe("Zapisz");
+    expect(get(english.t)("Save")).toBe("Save");
+    polish.setLocale("en");
+    expect(get(english.locale)).toBe("en");
+    expect(get(english.t)("Save")).toBe("Save");
+    english.setLocale("pl");
+    expect(get(polish.locale)).toBe("en");
+    expect(get(polish.t)("Save")).toBe("Save");
+    expect(get(english.t)("Save")).toBe("Zapisz");
+  });
+  it("renders Czech server-side and keeps a retained English context independent", () => {
+    const contexts: AdminI18nContext[] = [];
+    for (const initialLocale of ["cs", "en"] as const) {
+      const result = render(Harness, {
+        props: { initialLocale, userText: "<script>test</script>", onContext: (context) => contexts.push(context) },
+      });
+      expect(result.body).toContain(initialLocale === "cs" ? "Uložit" : "Save");
+      expect(result.body).toContain("&lt;script>");
+    }
+    contexts[0].setLocale("pl");
+    expect(get(contexts[1].t)("Save")).toBe("Save");
+    contexts[1].setLocale("cs");
+    expect(get(contexts[0].t)("Save")).toBe("Zapisz");
+    expect(get(contexts[1].t)("Save")).toBe("Uložit");
   });
 });

@@ -4,7 +4,7 @@
   "type": "module",
   "private": false,
   "license": "MIT",
-  "description": "Kener Admin PL — Polish and English management panel, maintained by kgtie; based on Kener 4.2.1.",
+  "description": "Kener Admin PL — Polish, Czech and English management panel, maintained by kgtie; based on Kener 4.2.1.",
   "author": "kgtie",
   "keywords": [
     "status page",

@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { page, userEvent } from "vitest/browser";
+import { commands, page, userEvent } from "vitest/browser";
 import { render } from "vitest-browser-svelte";
 import Harness from "./AdminViews.harness.svelte";
+
+declare module "vitest/browser" {
+  interface BrowserCommands {
+    mockBadgeImages: () => Promise<void>;
+    restoreBadgeImages: () => Promise<void>;
+  }
+}
 
 const requests: Array<{ action: string; data?: Record<string, unknown> }> = [];
 
@@ -62,65 +69,75 @@ afterEach(() => {
 });
 
 describe("administrative language review regressions", () => {
-  it.each([
-    ["status", "Stan", "Status"],
-    ["uptime", "Dostępność", "Uptime"],
-    ["latency", "Opóźnienie", "Latency"],
-  ] as const)(
-    "keeps the %s badge path technical while localizing labels and generated alt text",
-    async (type, polishLabel, englishLabel) => {
-      const screen = await render(Harness, { view: "badges" });
-      await expect.element(screen.getByLabelText("Adres URL odznaki", { exact: true })).toBeInTheDocument();
-      if (type !== "status") {
-        await screen.getByRole("button", { name: "Typ odznaki", exact: true }).click();
-        await page.getByRole("option", { name: polishLabel, exact: true }).click();
-      }
-      await expect
-        .element(screen.getByRole("button", { name: "Typ odznaki", exact: true }))
-        .toHaveTextContent(polishLabel);
-      const path = () => new URL((document.querySelector("#badge-url") as HTMLInputElement).value).pathname;
-      await vi.waitFor(() => expect(path()).toBe("/badge/_/" + type));
-      await expect
-        .element(screen.getByLabelText("HTML", { exact: true }))
-        .toHaveValue(expect.stringContaining('alt="' + polishLabel + '"'));
-      await expect
-        .element(screen.getByRole("img", { name: "Podgląd odznaki", exact: true }))
-        .toHaveAttribute("src", expect.stringContaining("/badge/_/" + type));
-      await userEvent.selectOptions(screen.getByRole("combobox", { name: "Język panelu" }), "en");
-      await expect
-        .element(screen.getByRole("button", { name: "Badge Type", exact: true }))
-        .toHaveTextContent(englishLabel);
-      expect(path()).toBe("/badge/_/" + type);
-      await expect
-        .element(screen.getByLabelText("HTML", { exact: true }))
-        .toHaveValue(expect.stringContaining('alt="' + englishLabel + '"'));
-      await expect
-        .element(screen.getByRole("img", { name: "Badge preview", exact: true }))
-        .toHaveAttribute("src", expect.stringContaining("/badge/_/" + type));
-      await userEvent.selectOptions(screen.getByRole("combobox", { name: "Panel language" }), "pl");
-      await expect
-        .element(screen.getByRole("button", { name: "Typ odznaki", exact: true }))
-        .toHaveTextContent(polishLabel);
-      expect(path()).toBe("/badge/_/" + type);
-    },
-  );
+  describe("badge previews", () => {
+    beforeEach(async () => {
+      await commands.mockBadgeImages();
+    });
+
+    afterEach(async () => {
+      await commands.restoreBadgeImages();
+    });
+
+    it.each([
+      ["status", "Stan", "Status"],
+      ["uptime", "Dostępność", "Uptime"],
+      ["latency", "Opóźnienie", "Latency"],
+    ] as const)(
+      "keeps the %s badge path technical while localizing labels and generated alt text",
+      async (type, polishLabel, englishLabel) => {
+        const screen = await render(Harness, { view: "badges" });
+        await expect.element(screen.getByLabelText("Adres URL odznaki", { exact: true })).toBeInTheDocument();
+        if (type !== "status") {
+          await screen.getByLabelText("Typ odznaki", { exact: true }).click();
+          await page.getByRole("option", { name: polishLabel, exact: true }).click();
+        }
+        await expect.element(screen.getByLabelText("Typ odznaki", { exact: true })).toHaveTextContent(polishLabel);
+        const expectLoadedPreview = async (name: string) => {
+          const preview = screen.getByRole("img", { name, exact: true });
+          await expect.element(preview).toHaveAttribute("src", expect.stringContaining("/badge/_/" + type));
+          await vi.waitFor(() => {
+            const image = preview.element() as HTMLImageElement;
+            expect(image.complete).toBe(true);
+            expect(image.naturalWidth).toBeGreaterThan(0);
+          });
+        };
+        const path = () => new URL((document.querySelector("#badge-url") as HTMLInputElement).value).pathname;
+        await vi.waitFor(() => expect(path()).toBe("/badge/_/" + type));
+        await expect
+          .element(screen.getByLabelText("HTML", { exact: true }))
+          .toHaveValue(expect.stringContaining('alt="' + polishLabel + '"'));
+        await expectLoadedPreview("Podgląd odznaki");
+        await userEvent.selectOptions(screen.getByRole("combobox", { name: "Język panelu" }), "en");
+        await expect.element(screen.getByLabelText("Badge Type", { exact: true })).toHaveTextContent(englishLabel);
+        expect(path()).toBe("/badge/_/" + type);
+        await expect
+          .element(screen.getByLabelText("HTML", { exact: true }))
+          .toHaveValue(expect.stringContaining('alt="' + englishLabel + '"'));
+        await expectLoadedPreview("Badge preview");
+        await userEvent.selectOptions(screen.getByRole("combobox", { name: "Panel language" }), "pl");
+        await expect.element(screen.getByLabelText("Typ odznaki", { exact: true })).toHaveTextContent(polishLabel);
+        expect(path()).toBe("/badge/_/" + type);
+        await expectLoadedPreview("Podgląd odznaki");
+      },
+    );
+  });
 
   it("uses the selected public language for date previews, independently of the panel language", async () => {
     const screen = await render(Harness, { view: "internationalization" });
     const plMonth = new Intl.DateTimeFormat("pl", { month: "long" }).format(new Date());
     const enMonth = new Intl.DateTimeFormat("en", { month: "long" }).format(new Date());
-    await expect.element(screen.getByRole("button", { name: "Domyślny język" })).toHaveTextContent("polski");
+    await expect.element(screen.getByLabelText("Domyślny język", { exact: true })).toHaveTextContent("polski");
     await expect
       .element(screen.getByRole("checkbox", { name: "duński", exact: true }))
       .toHaveAttribute("id", "locale-dk");
     await screen.getByLabelText("Tylko data", { exact: true }).fill("LLLL");
     await expect.element(screen.getByText("Podgląd: " + plMonth, { exact: true })).toBeInTheDocument();
-    await screen.getByRole("button", { name: "Domyślny język" }).click();
+    await screen.getByLabelText("Domyślny język", { exact: true }).click();
     await page.getByRole("option", { name: "angielski", exact: true }).click();
     await expect.element(screen.getByText("Podgląd: " + enMonth, { exact: true })).toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: "Zapisz języki", exact: true })).toBeInTheDocument();
     await userEvent.selectOptions(screen.getByRole("combobox", { name: "Język panelu" }), "en");
-    await screen.getByRole("button", { name: "Default Language" }).click();
+    await screen.getByLabelText("Default Language", { exact: true }).click();
     await page.getByRole("option", { name: "Polish", exact: true }).click();
     await expect.element(screen.getByText("Preview: " + plMonth, { exact: true })).toBeInTheDocument();
     expect(requests.every((request) => request.action !== "storeSiteData")).toBe(true);
@@ -129,15 +146,17 @@ describe("administrative language review regressions", () => {
   it("localizes both empty alert-log branches and keeps filter values unchanged in requests", async () => {
     const screen = await render(Harness, { view: "alert-logs" });
     await expect.element(screen.getByText("Ten alert nie został jeszcze wyzwolony.")).toBeInTheDocument();
-    const filter = screen.getByRole("button", { name: /^(Wszystkie stany|Wyzwolony|Rozwiązany)$/ });
-    await filter.click();
+    const filter = () =>
+      page.elementLocator(document.querySelector<HTMLButtonElement>('[data-slot="select-trigger"]')!);
+    await expect.element(filter()).toHaveTextContent("Wszystkie stany");
+    await filter().click();
     await page.getByRole("option", { name: "Wyzwolony", exact: true }).click();
     await expect.element(screen.getByText("Nie znaleziono wyzwolonych alertów.")).toBeInTheDocument();
-    await expect.element(filter).toHaveTextContent("Wyzwolony");
-    await filter.click();
+    await expect.element(filter()).toHaveTextContent("Wyzwolony");
+    await filter().click();
     await page.getByRole("option", { name: "Rozwiązany", exact: true }).click();
     await expect.element(screen.getByText("Nie znaleziono rozwiązanych alertów.")).toBeInTheDocument();
-    await expect.element(filter).toHaveTextContent("Rozwiązany");
+    await expect.element(filter()).toHaveTextContent("Rozwiązany");
     expect(
       requests.filter((request) => request.action === "getAllAlertsPaginated").map((request) => request.data?.status),
     ).toEqual(["ALL", "TRIGGERED", "RESOLVED"]);
@@ -145,7 +164,7 @@ describe("administrative language review regressions", () => {
 
   it("translates readonly role names in OIDC while retaining an identically named custom role", async () => {
     const screen = await render(Harness, { view: "oidc" });
-    const selector = screen.getByRole("button", { name: "Domyślna rola" });
+    const selector = screen.getByLabelText("Domyślna rola", { exact: true });
     await expect.element(selector).toHaveTextContent("Użytkownik");
     await selector.click();
     await expect.element(page.getByRole("option", { name: "Użytkownik", exact: true })).toBeInTheDocument();
@@ -156,7 +175,7 @@ describe("administrative language review regressions", () => {
 
   it("displays state adjectives rather than action verbs in provider settings", async () => {
     const screen = await render(Harness, { view: "provider" });
-    const selector = screen.getByRole("button", { name: "Stan", exact: true });
+    const selector = screen.getByLabelText("Stan", { exact: true });
     await expect.element(selector).toHaveTextContent("Wyłączony");
     await selector.click();
     await page.getByRole("option", { name: "Włączony", exact: true }).click();
